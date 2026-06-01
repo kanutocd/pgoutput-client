@@ -1,5 +1,12 @@
 # pgoutput-client
 
+[![Gem Version](https://badge.fury.io/rb/pgoutput-client.svg)](https://badge.fury.io/rb/pgoutput-client)
+[![CI](https://github.com/kanutocd/pgoutput-client/workflows/CI/badge.svg)](https://github.com/kanutocd/pgoutput-client/actions)
+[![Coverage Status](https://codecov.io/gh/kanutocd/pgoutput-client/branch/main/graph/badge.svg)](https://codecov.io/gh/kanutocd/pgoutput-client)
+[![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%203.4-ruby.svg)](https://www.ruby-lang.org/en/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 A transport-only PostgreSQL logical replication client for receiving raw `pgoutput` payloads in Ruby.
 
 `pgoutput-client` connects to PostgreSQL using logical replication, starts a `pgoutput` replication stream, receives `CopyData` messages, handles keepalives, sends standby feedback, and yields raw pgoutput payload bytes to downstream gems such as `pgoutput-parser` and `pgoutput-decoder`.
