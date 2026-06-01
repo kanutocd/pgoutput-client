@@ -279,23 +279,7 @@ parser / decoder / processor pools
 
 ---
 
-## Rake Tasks
-
-### Default
-
-Run them all
-
-```bash
-bundle exec rake
-```
-
-### Code Linting and Formatting
-
-```bash
-bundle exec rake rubocop
-```
-
-### Testing
+## Testing
 
 ```bash
 bundle exec rake test
@@ -306,20 +290,21 @@ With coverage:
 ```bash
 COVERAGE=true bundle exec rake test
 ```
+
 ---
 
-### Type Checking
+## Type Checking
 
 ```bash
-bundle exec rbs:validate
+bundle exec steep check
 ```
 
 ---
 
-### Documentation
+## Documentation
 
 ```bash
-bundle exec rake yard
+bundle exec yard doc
 ```
 
 ---
