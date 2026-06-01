@@ -1,8 +1,25 @@
+plugins:
+  - rubocop-minitest
+  - rubocop-rake
+
 AllCops:
-  TargetRubyVersion: 3.2
+  TargetRubyVersion: 3.4
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
+
+Layout/LineLength:
+  Exclude:
+    - lib/pgoutput/client/commands.rb
+
+Metrics/AbcSize:
+  Max: 28
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+Metrics/MethodLength:
+  Max: 15

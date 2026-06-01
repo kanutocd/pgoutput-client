@@ -1,0 +1,5 @@
+--protected
+--markup markdown
+--readme
+docs/index.md
+'lib/**/*.rb'

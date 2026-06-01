@@ -7,4 +7,8 @@
 * When interpreting the words and actions of others, participants should always assume good intentions.
 * Behaviour which can be reasonably considered harassment will not be tolerated.
 
-If you have any concerns about behaviour within this project, please contact us at ["kenneth.c.demanawa@gmail.com"](mailto:"kenneth.c.demanawa@gmail.com").
+If you have concerns about behaviour within this project, please open an issue at:
+
+https://github.com/kanutocd/pgoutput-client/issues/new
+
+Please note that GitHub issues are public. Do not include sensitive personal information in your report.
