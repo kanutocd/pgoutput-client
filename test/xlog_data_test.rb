@@ -39,7 +39,6 @@ class XLogDataTest < Minitest::Test
     assert_equal "truncated XLogData message", error.message
   end
 
-
   def test_unpack_u64_rejects_offset_beyond_buffer
     assert_raises(Pgoutput::Client::ProtocolError) do
       Pgoutput::Client::XLogData.send(
