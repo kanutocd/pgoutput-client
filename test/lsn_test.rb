@@ -1,27 +1,25 @@
 # frozen_string_literal: true
 
-require "test_helper"
+require_relative "test_helper"
 
 class LSNTest < Minitest::Test
-  def test_parse_lsn
-    assert_equal 23_817_296, Pgoutput::Client::LSN.parse("0/16B6C50")
+  def test_parse_and_format
+    assert_equal 0x0000_0001_0000_0002, Pgoutput::Client::LSN.parse("1/2")
+    assert_equal "1/2", Pgoutput::Client::LSN.format(0x0000_0001_0000_0002)
   end
 
-  def test_format_lsn
-    assert_equal "0/16B6C50", Pgoutput::Client::LSN.format(23_817_296)
+  def test_parse_rejects_missing_separator
+    error = assert_raises(ArgumentError) { Pgoutput::Client::LSN.parse("12") }
+    assert_equal 'invalid LSN: "12"', error.message
   end
 
-  def test_round_trip_high_segment
-    integer = Pgoutput::Client::LSN.parse("1/FFFFFFFF")
-
-    assert_equal "1/FFFFFFFF", Pgoutput::Client::LSN.format(integer)
+  def test_parse_rejects_invalid_hex
+    error = assert_raises(ArgumentError) { Pgoutput::Client::LSN.parse("G/1") }
+    assert_equal 'invalid LSN: "G/1"', error.message
   end
 
-  def test_rejects_invalid_lsn
-    assert_raises(ArgumentError) { Pgoutput::Client::LSN.parse("not-lsn") }
-  end
-
-  def test_rejects_negative_format
-    assert_raises(ArgumentError) { Pgoutput::Client::LSN.format(-1) }
+  def test_format_rejects_negative_value
+    error = assert_raises(ArgumentError) { Pgoutput::Client::LSN.format(-1) }
+    assert_equal "LSN must be non-negative", error.message
   end
 end

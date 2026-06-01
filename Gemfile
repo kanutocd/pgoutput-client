@@ -14,3 +14,5 @@ gem "rubocop-rake", "~> 0.7.1"
 gem "simplecov", "~> 0.22.0"
 gem "steep", "~> 2.0"
 gem "yard", "~> 0.9.44"
+
+gem "minitest-mock", "~> 5.27"

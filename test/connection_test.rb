@@ -3,7 +3,6 @@
 require_relative "test_helper"
 
 class ConnectionTest < Minitest::Test
-
   class FakePGConnection
     attr_reader :executed_sql, :copy_data_payloads
     attr_accessor :copy_data_response, :finished, :raise_on
@@ -62,7 +61,6 @@ class ConnectionTest < Minitest::Test
     PG.connect_error = connect_error
     PG.last_connect_args = nil
   end
-
 
   def test_open_connects_in_database_replication_mode
     setup_pg
