@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-
   pull_request:
 
 permissions:
@@ -17,16 +16,19 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '4.0.5'
+          - "3.4"
+          - "4.0"
 
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
+
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
-        run: bundle exec rake
+
+      - name: Run default task
+        run: COVERAGE=true bundle exec rake
