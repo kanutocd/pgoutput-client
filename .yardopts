@@ -1,5 +1,7 @@
+--title "pgoutput-client API Documentation"
 --protected
 --markup markdown
---readme
-docs/index.md
+--readme README.md
 'lib/**/*.rb'
+-
+--files CHANGELOG.md LICENSE.txt CODE_OF_CONDUCT.md
