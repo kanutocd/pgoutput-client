@@ -1,0 +1,42 @@
+module Pgoutput
+  module Client
+    # SQL command builders for PostgreSQL replication-mode commands.
+    #
+    # PostgreSQL replication commands are issued on a connection opened with the
+    # replication parameter enabled. The methods in this module render the small
+    # command subset needed by `pgoutput-client` and rely on {Configuration} to
+    # validate identifier-like values before interpolation.
+    #
+    # @api private
+    module Commands
+      # Render a `CREATE_REPLICATION_SLOT` command.
+      #
+      # Temporary slots are requested only when
+      # {Configuration#temporary_slot} is true.
+      #
+      # @example Permanent slot
+      #   Commands.create_replication_slot(config)
+      #   # => "CREATE_REPLICATION_SLOT cdc_slot LOGICAL pgoutput"
+      #
+      # @param configuration [Configuration] replication configuration
+      # @return [String] SQL command suitable for `PG::Connection#exec`
+      def self?.create_replication_slot: (untyped configuration) -> ::String
+
+      # Render a `DROP_REPLICATION_SLOT` command.
+      #
+      # @param configuration [Configuration] replication configuration
+      # @return [String] SQL command suitable for `PG::Connection#exec`
+      def self?.drop_replication_slot: (untyped configuration) -> ::String
+
+      # Render a `START_REPLICATION SLOT ... LOGICAL ...` command.
+      #
+      # The command includes the pgoutput options required by PostgreSQL:
+      # `proto_version` and `publication_names`. Optional pgoutput switches such
+      # as `binary` and `messages` are emitted only when enabled.
+      #
+      # @param configuration [Configuration] replication configuration
+      # @return [String] SQL command suitable for `PG::Connection#exec`
+      def self?.start_replication: (untyped configuration) -> ::String
+    end
+  end
+end

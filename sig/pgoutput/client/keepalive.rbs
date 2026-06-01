@@ -1,0 +1,55 @@
+module Pgoutput
+  module Client   
+    class KeepaliveData < Data
+      attr_reader wal_end: Integer
+      attr_reader server_clock: Integer
+      attr_reader reply_requested: bool
+
+      def self.new: (
+        Integer wal_end,
+        Integer server_clock,
+        bool reply_requested
+      ) -> instance
+    end
+
+    # Immutable primary keepalive replication message.
+    #
+    # PostgreSQL sends keepalive CopyData payloads while a replication stream is
+    # active. The payload layout is:
+    #
+    # ```text
+    # Byte 0      : message tag `k`
+    # Bytes 1-8   : current server WAL end, unsigned 64-bit big-endian
+    # Bytes 9-16  : server clock, PostgreSQL timestamp format
+    # Byte 17     : reply-requested flag, 1 for immediate feedback
+    # ```
+    #
+    # The stream layer uses this message to advance its known WAL position and to
+    # decide whether to send standby status feedback immediately.
+    #
+    # @attr_reader wal_end [Integer] latest server WAL position
+    # @attr_reader server_clock [Integer] PostgreSQL server timestamp in
+    #   microseconds since 2000-01-01 UTC
+    # @attr_reader reply_requested [Boolean] whether PostgreSQL requested
+    #   immediate feedback
+    class Keepalive < KeepaliveData
+      # Parse a keepalive CopyData payload.
+      #
+      # @param bytes [String] raw CopyData payload beginning with `k`
+      # @return [Keepalive] immutable parsed keepalive message
+      # @raise [ProtocolError] if the payload is empty, has the wrong message
+      #   tag, or is too short to contain the required fields
+      def self.parse: (untyped bytes) -> untyped
+
+      # Latest server WAL position formatted as a PostgreSQL LSN string.
+      #
+      # @return [String]
+      def wal_end_lsn: () -> untyped
+
+      # @param binary [String]
+      # @param offset [Integer]
+      # @return [Integer]
+      def self.unpack_u64: (untyped binary, untyped offset) -> untyped
+    end
+  end
+end

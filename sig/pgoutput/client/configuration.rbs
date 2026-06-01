@@ -1,0 +1,504 @@
+module Pgoutput
+  module Client
+    # Immutable configuration for a PostgreSQL logical replication stream.
+    #
+    # A configuration describes how `pgoutput-client` should connect to
+    # PostgreSQL and how it should request logical replication from the server.
+    # It deliberately contains transport-level settings only; parsing pgoutput
+    # records and decoding PostgreSQL values belong to downstream layers.
+    #
+    # The object freezes itself and its string/array attributes during
+    # initialization so it can be safely shared by transport components without
+    # defensive copying.
+    #
+    # @example Minimal configuration
+    #   config = Pgoutput::Client::Configuration.new(
+    #     database_url: "postgres://localhost/app",
+    #     slot_name: "cdc_slot",
+    #     publication_names: "app_publication"
+    #   )
+    #
+    # @example Start from a known LSN and request binary values from pgoutput
+    #   config = Pgoutput::Client::Configuration.new(
+    #     database_url: ENV.fetch("DATABASE_URL"),
+    #     slot_name: "cdc_slot",
+    #     publication_names: %w[app_publication],
+    #     start_lsn: "0/16B6C50",
+    #     binary: true
+    #   )
+    #
+    # @api public
+    class Configuration
+      @database_url: untyped
+
+      @slot_name: untyped
+
+      @publication_names: untyped
+
+      @start_lsn: untyped
+
+      @plugin: untyped
+
+      @proto_version: untyped
+
+      @binary: untyped
+
+      @messages: untyped
+
+      @auto_create_slot: untyped
+
+      @temporary_slot: untyped
+
+      @feedback_interval: untyped
+
+      # Default logical decoding output plugin.
+      #
+      # @return [String]
+      DEFAULT_PLUGIN: "pgoutput"
+
+      # Default pgoutput protocol version.
+      #
+      # @return [Integer]
+      DEFAULT_PROTO_VERSION: 1
+
+      # Default interval, in seconds, between standby status feedback messages.
+      #
+      # @return [Float]
+      DEFAULT_FEEDBACK_INTERVAL: ::Float
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader database_url: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader slot_name: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader publication_names: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader start_lsn: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader plugin: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader proto_version: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader binary: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader messages: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader auto_create_slot: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader temporary_slot: untyped
+
+      # @!attribute [r] database_url
+      #   PostgreSQL connection URL.
+      #   @return [String]
+      # @!attribute [r] slot_name
+      #   Logical replication slot name.
+      #   @return [String]
+      # @!attribute [r] publication_names
+      #   Publication names requested from pgoutput.
+      #   @return [Array<String>]
+      # @!attribute [r] start_lsn
+      #   Optional normalized starting LSN.
+      #   @return [String, nil]
+      # @!attribute [r] plugin
+      #   Logical decoding output plugin name.
+      #   @return [String]
+      # @!attribute [r] proto_version
+      #   pgoutput protocol version.
+      #   @return [Integer]
+      # @!attribute [r] binary
+      #   Whether to request binary column values from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] messages
+      #   Whether to request logical decoding messages from pgoutput.
+      #   @return [Boolean]
+      # @!attribute [r] auto_create_slot
+      #   Whether the client should create the slot before streaming.
+      #   @return [Boolean]
+      # @!attribute [r] temporary_slot
+      #   Whether a newly created slot should be temporary.
+      #   @return [Boolean]
+      # @!attribute [r] feedback_interval
+      #   Standby feedback interval in seconds.
+      #   @return [Float]
+      attr_reader feedback_interval: untyped
+
+      # Build and validate a logical replication stream configuration.
+      #
+      # `slot_name` and every publication name are intentionally limited to
+      # simple PostgreSQL identifier-like strings. This keeps command rendering
+      # small and predictable while avoiding quoting rules in this transport
+      # layer.
+      #
+      # Boolean options are normalized with Ruby truthiness. `nil` and `false`
+      # become `false`; all other values become `true`.
+      #
+      # @param database_url [#to_s] PostgreSQL connection URL
+      # @param slot_name [#to_s] logical replication slot name
+      # @param publication_names [Array<#to_s>, #to_s] one or more publication
+      #   names to pass to pgoutput
+      # @param start_lsn [String, Integer, nil] starting LSN as a PostgreSQL LSN
+      #   string, an integer WAL position, or `nil` for `0/0`
+      # @param plugin [#to_s] logical decoding plugin name
+      # @param proto_version [#to_int, #to_s] pgoutput protocol version
+      # @param binary [Object] truthy to request binary column values
+      # @param messages [Object] truthy to request logical decoding messages
+      # @param auto_create_slot [Object] truthy to create the slot before
+      #   starting replication
+      # @param temporary_slot [Object] truthy to create a temporary replication
+      #   slot when `auto_create_slot` is enabled
+      # @param feedback_interval [#to_f, #to_s] seconds between periodic standby
+      #   feedback messages
+      # @return [void]
+      # @raise [ConfigurationError] if publication names are empty or numeric
+      #   settings are invalid
+      # @raise [ArgumentError] if `start_lsn`, `proto_version`, or
+      #   `feedback_interval` cannot be coerced
+      def initialize: (database_url: untyped, slot_name: untyped, publication_names: untyped, ?start_lsn: untyped?, ?plugin: untyped, ?proto_version: untyped, ?binary: bool, ?messages: bool, ?auto_create_slot: bool, ?temporary_slot: bool, ?feedback_interval: untyped) -> void
+
+      # Starting LSN to render in `START_REPLICATION`.
+      #
+      # @return [String] normalized LSN string, defaulting to `"0/0"`
+      def start_lsn_string: () -> untyped
+
+      private
+
+      def validate!: () -> untyped
+
+      def normalize_lsn: (untyped value) -> (nil | untyped)
+
+      def validate_identifier: (untyped value, untyped field) -> untyped
+
+      # Boolean type checking helper
+      def boolean: (untyped value, untyped name) -> (true | false | untyped)
+    end
+  end
+end

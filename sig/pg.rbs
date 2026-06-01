@@ -1,0 +1,12 @@
+module PG
+  def self.connect: (String conninfo, ?replication: String) -> Connection
+
+  class Error < StandardError
+  end
+
+  class Connection
+    def exec: (String sql) -> untyped
+    def close: () -> void
+    def finished?: () -> bool
+  end
+end

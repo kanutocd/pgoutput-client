@@ -1,0 +1,71 @@
+# frozen_string_literal: true
+
+module Pgoutput
+  module Client
+    ReplicationXLogData = Data.define(:wal_start, :wal_end, :server_clock, :payload)
+
+    # Immutable XLogData replication envelope.
+    #
+    # PostgreSQL wraps logical decoding plugin output in an XLogData CopyData
+    # payload while streaming replication is active. The payload layout is:
+    #
+    # ```text
+    # Byte 0      : message tag `w`
+    # Bytes 1-8   : WAL start position, unsigned 64-bit big-endian
+    # Bytes 9-16  : WAL end position, unsigned 64-bit big-endian
+    # Bytes 17-24 : server clock, PostgreSQL timestamp format
+    # Bytes 25..  : logical decoding plugin payload
+    # ```
+    #
+    # Instances are created through {.parse} and made shareable so they can cross
+    # Ractor boundaries with their frozen payload bytes.
+    #
+    # @attr_reader wal_start [Integer] WAL position where this message begins
+    # @attr_reader wal_end [Integer] WAL position after this message
+    # @attr_reader server_clock [Integer] PostgreSQL server timestamp in
+    #   microseconds since 2000-01-01 UTC
+    # @attr_reader payload [String] frozen raw logical decoding plugin payload
+    class XLogData < ReplicationXLogData
+      # Parse an XLogData CopyData payload.
+      #
+      # @param bytes [String] raw CopyData payload beginning with `w`
+      # @return [XLogData] immutable parsed envelope
+      # @raise [ProtocolError] if the payload is empty, has the wrong message
+      #   tag, or is too short to contain the required fields
+      def self.parse(bytes)
+        binary = bytes.b
+        raise ProtocolError, "empty CopyData payload" if binary.empty?
+        raise ProtocolError, "expected XLogData message" unless binary.getbyte(0) == "w".ord
+        raise ProtocolError, "truncated XLogData message" if binary.bytesize < 25
+
+        wal_start = unpack_u64(binary, 1)
+        wal_end = unpack_u64(binary, 9)
+        server_clock = unpack_u64(binary, 17)
+        payload = binary.byteslice(25..)&.freeze || "".b.freeze
+
+        Ractor.make_shareable(new(wal_start, wal_end, server_clock, payload))
+      end
+
+      # Starting WAL position formatted as a PostgreSQL LSN string.
+      #
+      # @return [String]
+      def wal_start_lsn = LSN.format(wal_start)
+
+      # Ending WAL position formatted as a PostgreSQL LSN string.
+      #
+      # @return [String]
+      def wal_end_lsn = LSN.format(wal_end)
+
+      # @param binary [String]
+      # @param offset [Integer]
+      # @return [Integer]
+      def self.unpack_u64(binary, offset)
+        value = binary.byteslice(offset, 8)&.unpack1("Q>")
+        raise ProtocolError, "failed to unpack uint64" unless value.is_a?(Integer)
+
+        value
+      end
+      private_class_method :unpack_u64
+    end
+  end
+end

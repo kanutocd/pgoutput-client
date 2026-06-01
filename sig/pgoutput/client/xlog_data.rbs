@@ -1,0 +1,63 @@
+module Pgoutput
+  module Client
+    class ReplicationXLogData < Data
+      attr_reader wal_start: Integer
+      attr_reader wal_end: Integer
+      attr_reader server_clock: Integer
+      attr_reader payload: String
+
+      def self.new: (
+        Integer wal_start,
+        Integer wal_end,
+        Integer server_clock,
+        String payload
+      ) -> instance
+    end
+
+    # Immutable XLogData replication envelope.
+    #
+    # PostgreSQL wraps logical decoding plugin output in an XLogData CopyData
+    # payload while streaming replication is active. The payload layout is:
+    #
+    # ```text
+    # Byte 0      : message tag `w`
+    # Bytes 1-8   : WAL start position, unsigned 64-bit big-endian
+    # Bytes 9-16  : WAL end position, unsigned 64-bit big-endian
+    # Bytes 17-24 : server clock, PostgreSQL timestamp format
+    # Bytes 25..  : logical decoding plugin payload
+    # ```
+    #
+    # Instances are created through {.parse} and made shareable so they can cross
+    # Ractor boundaries with their frozen payload bytes.
+    #
+    # @attr_reader wal_start [Integer] WAL position where this message begins
+    # @attr_reader wal_end [Integer] WAL position after this message
+    # @attr_reader server_clock [Integer] PostgreSQL server timestamp in
+    #   microseconds since 2000-01-01 UTC
+    # @attr_reader payload [String] frozen raw logical decoding plugin payload
+    class XLogData < ReplicationXLogData
+      # Parse an XLogData CopyData payload.
+      #
+      # @param bytes [String] raw CopyData payload beginning with `w`
+      # @return [XLogData] immutable parsed envelope
+      # @raise [ProtocolError] if the payload is empty, has the wrong message
+      #   tag, or is too short to contain the required fields
+      def self.parse: (untyped bytes) -> untyped
+
+      # Starting WAL position formatted as a PostgreSQL LSN string.
+      #
+      # @return [String]
+      def wal_start_lsn: () -> untyped
+
+      # Ending WAL position formatted as a PostgreSQL LSN string.
+      #
+      # @return [String]
+      def wal_end_lsn: () -> untyped
+
+      # @param binary [String]
+      # @param offset [Integer]
+      # @return [Integer]
+      def self.unpack_u64: (untyped binary, untyped offset) -> untyped
+    end
+  end
+end

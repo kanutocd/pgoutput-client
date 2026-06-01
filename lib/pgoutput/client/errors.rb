@@ -1,0 +1,41 @@
+# frozen_string_literal: true
+
+module Pgoutput
+  module Client
+    # Base error class for all pgoutput-client failures.
+    #
+    # Rescue this class when callers want to handle any error raised by the
+    # transport layer without also rescuing unrelated Ruby or PostgreSQL driver
+    # exceptions.
+    #
+    # @api public
+    class Error < StandardError; end
+
+    # Raised when stream configuration is invalid.
+    #
+    # Examples include an empty publication list, invalid replication slot name,
+    # invalid publication name, non-positive protocol version, or non-positive
+    # feedback interval.
+    #
+    # @api public
+    class ConfigurationError < Error; end
+
+    # Raised when a replication protocol envelope cannot be parsed.
+    #
+    # This error represents malformed or unexpected CopyData payloads at the
+    # transport-envelope level. It does not describe pgoutput plugin payload
+    # parsing errors; those belong to the parser layer.
+    #
+    # @api public
+    class ProtocolError < Error; end
+
+    # Raised when a PostgreSQL replication connection operation fails.
+    #
+    # `Connection` converts `PG::Error` instances into this error so public
+    # callers do not need to depend on the PostgreSQL driver's exception classes
+    # for transport-level handling.
+    #
+    # @api public
+    class ConnectionError < Error; end
+  end
+end
