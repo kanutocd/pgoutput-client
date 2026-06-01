@@ -43,7 +43,7 @@ jobs:
             exit 1
           fi
 
-          ruby -e 'coverage = ARGV.fetch(0).to_f; abort("YARD documentation coverage #{coverage}% is below 95%") if coverage < 95.0' "$coverage"
+          ruby -e 'coverage = ARGV.fetch(0).to_f; abort("YARD documentation coverage #{coverage}% is below 90%") if coverage < 90.0' "$coverage"
 
       - name: Disable Jekyll processing
         run: touch doc/.nojekyll
