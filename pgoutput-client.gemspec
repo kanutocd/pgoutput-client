@@ -8,8 +8,20 @@ Gem::Specification.new do |spec|
   spec.authors = ["Ken C. Demanawa"]
   spec.email = ["kenneth.c.demanawa@gmail.com"]
 
-  spec.summary = "PostgreSQL pgoutput logical replication transport client."
-  spec.description = "Transport-only PostgreSQL logical replication client for receiving pgoutput CopyData payloads."
+  spec.summary = "PostgreSQL pgoutput logical replication transport and lifecycle management for Ruby."
+  spec.description = <<~DESC
+  pgoutput-client provides a PostgreSQL logical replication transport for Ruby.
+
+  It manages replication connections, lifecycle, monitoring,
+  keepalive handling, graceful shutdown, and transport-level
+  acknowledgment boundaries while streaming pgoutput messages
+  to downstream consumers.
+
+  pgoutput-client owns transport.
+
+  Parsers, decoders, source adapters, runtimes, and sinks remain
+  separate concerns within the CDC ecosystem.
+  DESC
   spec.homepage = "https://kanutocd.github.io/pgoutput-client/"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.4.0"

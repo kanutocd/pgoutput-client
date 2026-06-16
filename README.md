@@ -367,4 +367,4 @@ bundle exec rake e2e:run
 
 ## License
 
-MIT.
+[MIT](LICENSE.txt).
