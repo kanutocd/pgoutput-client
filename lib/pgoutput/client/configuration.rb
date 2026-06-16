@@ -31,7 +31,7 @@ module Pgoutput
     #
     # @api public
     class Configuration
-      # Default logical decoding output plugin.
+      # Fixed logical decoding output plugin.
       #
       # @return [String]
       DEFAULT_PLUGIN = "pgoutput"
@@ -58,9 +58,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -83,7 +80,6 @@ module Pgoutput
                   :slot_name,
                   :publication_names,
                   :start_lsn,
-                  :plugin,
                   :proto_version,
                   :binary,
                   :messages,
@@ -107,7 +103,6 @@ module Pgoutput
       #   names to pass to pgoutput
       # @param start_lsn [String, Integer, nil] starting LSN as a PostgreSQL LSN
       #   string, an integer WAL position, or `nil` for `0/0`
-      # @param plugin [#to_s] logical decoding plugin name
       # @param proto_version [#to_int, #to_s] pgoutput protocol version
       # @param binary [Object] truthy to request binary column values
       # @param messages [Object] truthy to request logical decoding messages
@@ -126,7 +121,6 @@ module Pgoutput
                      slot_name:,
                      publication_names:,
                      start_lsn: nil,
-                     plugin: DEFAULT_PLUGIN,
                      proto_version: DEFAULT_PROTO_VERSION,
                      binary: false,
                      messages: false,
@@ -139,7 +133,6 @@ module Pgoutput
           validate_identifier(name, "publication_name").freeze
         end.freeze
         @start_lsn = normalize_lsn(start_lsn).freeze
-        @plugin = String(plugin).freeze
         @proto_version = Integer(proto_version)
         @binary = boolean(binary, "binary")
         @messages = boolean(messages, "messages")

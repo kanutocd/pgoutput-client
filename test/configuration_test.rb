@@ -21,7 +21,6 @@ class ConfigurationTest < Minitest::Test
     assert_equal ["pub1"], configuration.publication_names
     assert_nil configuration.start_lsn
     assert_equal "0/0", configuration.start_lsn_string
-    assert_equal "pgoutput", configuration.plugin
     assert_equal 1, configuration.proto_version
     refute configuration.binary
     refute configuration.messages
@@ -38,10 +37,9 @@ class ConfigurationTest < Minitest::Test
     assert_equal "0/10", configuration.start_lsn_string
   end
 
-  def test_accepts_string_lsn_and_custom_values # rubocop:disable Metrics/MethodLength
+  def test_accepts_string_lsn_and_custom_values
     configuration = build(
       start_lsn: "1/2",
-      plugin: :pgoutput,
       proto_version: "2",
       binary: true,
       messages: true,
@@ -51,7 +49,6 @@ class ConfigurationTest < Minitest::Test
     )
 
     assert_equal "1/2", configuration.start_lsn
-    assert_equal "pgoutput", configuration.plugin
     assert_equal 2, configuration.proto_version
     assert configuration.binary
     assert configuration.messages
@@ -82,6 +79,14 @@ class ConfigurationTest < Minitest::Test
     end
 
     assert_equal "publication_name must be a PostgreSQL identifier-like string", error.message
+  end
+
+  def test_rejects_plugin_keyword
+    error = assert_raises(ArgumentError) do
+      build(plugin: "pgoutput")
+    end
+
+    assert_match(/unknown keyword: :plugin/, error.message)
   end
 
   def test_rejects_non_positive_proto_version

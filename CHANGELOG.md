@@ -1,13 +1,17 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## Unreleased
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### Fixed
 
-### Added
-
-- Placeholder for future development.
+- Remove the configurable plugin surface; this transport layer is fixed to `pgoutput`.
+- Wire `Pgoutput::Client::Runner#stop` to the active stream for cooperative shutdown.
+- Back off briefly when the replication socket has no `CopyData` ready instead of busy polling.
+- Retry live stream connection loss with backoff and resume from the latest confirmed WAL position.
+- Avoid recreating an existing replication slot during reconnect attempts.
+- Document the Docker-backed E2E workflow in the README and test skip hint.
+- Document that replay, checkpointing, deduplication, and sink ordering belong to downstream layers.
+- Add a live E2E reconnect test that restarts PostgreSQL mid-stream and verifies resume behavior.
 
 ---
 

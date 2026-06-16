@@ -39,3 +39,27 @@ namespace :rbs do
     sh "bundle exec steep check"
   end
 end
+
+namespace :test do
+  desc "Run Docker PostgreSQL E2E tests"
+  task :e2e do
+    sh [
+      RbConfig.ruby,
+      "-Ilib",
+      "-w",
+      "test/e2e/postgres_logical_replication_test.rb"
+    ].join(" ")
+  end
+end
+
+namespace :e2e do
+  desc "Start Docker PostgreSQL for E2E tests"
+  task :up do
+    sh "docker compose -f docker-compose.e2e.yml up -d"
+  end
+
+  desc "Stop Docker PostgreSQL for E2E tests"
+  task :down do
+    sh "docker compose -f docker-compose.e2e.yml down -v"
+  end
+end

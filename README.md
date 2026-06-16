@@ -190,8 +190,15 @@ It does not:
 - Run processor pipelines
 - Manage Ractor worker pools
 - Store audit records
+- Own replay, checkpointing, deduplication, or sink ordering
 
-Those responsibilities belong to higher layers.
+Those responsibilities belong to higher layers, especially `cdc-core` and the sink that materializes downstream state.
+
+## Failure Semantics
+
+If the live replication stream loses its connection, `pgoutput-client` retries a small number of times with a backoff and resumes from the latest confirmed WAL position.
+
+It does not decide replay policy, deduplication strategy, checkpoint storage, or exactly-once delivery. Those concerns belong to the downstream CDC runtime and sink layer.
 
 ---
 
@@ -327,6 +334,26 @@ bundle exec rbs:validate
 
 ```bash
 bundle exec rake yard
+```
+
+### End-to-End PostgreSQL
+
+Bring up the Docker-backed PostgreSQL target:
+
+```bash
+bundle exec rake e2e:up
+```
+
+Run the replication test against it:
+
+```bash
+PGOUTPUT_CLIENT_E2E=1 bundle exec rake test:e2e
+```
+
+Tear it down when you are done:
+
+```bash
+bundle exec rake e2e:down
 ```
 
 ---

@@ -26,7 +26,7 @@ module Pgoutput
       # @return [String] SQL command suitable for `PG::Connection#exec`
       def create_replication_slot(configuration)
         temporary = configuration.temporary_slot ? " TEMPORARY" : ""
-        "CREATE_REPLICATION_SLOT #{configuration.slot_name}#{temporary} LOGICAL #{configuration.plugin}"
+        "CREATE_REPLICATION_SLOT #{configuration.slot_name}#{temporary} LOGICAL #{Configuration::DEFAULT_PLUGIN}"
       end
 
       # Render a `DROP_REPLICATION_SLOT` command.
