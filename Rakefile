@@ -81,11 +81,9 @@ namespace :e2e do
 
   desc "Run E2E tests with Docker PostgreSQL and clean up afterward"
   task run: :up do
-    begin
-      Rake::Task["e2e:wait"].invoke
-      sh({ "PGOUTPUT_CLIENT_E2E" => "1" }, "bundle exec rake test:e2e")
-    ensure
-      Rake::Task["e2e:down"].invoke unless ENV["KEEP_E2E_POSTGRES"] == "1"
-    end
+    Rake::Task["e2e:wait"].invoke
+    sh({ "PGOUTPUT_CLIENT_E2E" => "1" }, "bundle exec rake test:e2e")
+  ensure
+    Rake::Task["e2e:down"].invoke unless ENV["KEEP_E2E_POSTGRES"] == "1"
   end
 end

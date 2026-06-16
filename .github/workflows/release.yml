@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-      url: https://rubygems.org/gems/cdc-core
+      url: https://rubygems.org/gems/pgoutput-client
     steps:
       - uses: actions/checkout@v6
         with:
