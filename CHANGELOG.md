@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.2.0] - 2026-06-16
+
 ### Fixed
 
 - Remove the configurable plugin surface; this transport layer is fixed to `pgoutput`.
