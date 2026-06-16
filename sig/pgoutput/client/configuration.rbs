@@ -37,8 +37,6 @@ module Pgoutput
 
       @start_lsn: untyped
 
-      @plugin: untyped
-
       @proto_version: untyped
 
       @binary: untyped
@@ -51,7 +49,7 @@ module Pgoutput
 
       @feedback_interval: untyped
 
-      # Default logical decoding output plugin.
+      # Fixed logical decoding output plugin.
       #
       # @return [String]
       DEFAULT_PLUGIN: "pgoutput"
@@ -78,9 +76,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -113,9 +108,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -148,9 +140,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -183,9 +172,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -218,44 +204,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
-      # @!attribute [r] proto_version
-      #   pgoutput protocol version.
-      #   @return [Integer]
-      # @!attribute [r] binary
-      #   Whether to request binary column values from pgoutput.
-      #   @return [Boolean]
-      # @!attribute [r] messages
-      #   Whether to request logical decoding messages from pgoutput.
-      #   @return [Boolean]
-      # @!attribute [r] auto_create_slot
-      #   Whether the client should create the slot before streaming.
-      #   @return [Boolean]
-      # @!attribute [r] temporary_slot
-      #   Whether a newly created slot should be temporary.
-      #   @return [Boolean]
-      # @!attribute [r] feedback_interval
-      #   Standby feedback interval in seconds.
-      #   @return [Float]
-      attr_reader plugin: untyped
-
-      # @!attribute [r] database_url
-      #   PostgreSQL connection URL.
-      #   @return [String]
-      # @!attribute [r] slot_name
-      #   Logical replication slot name.
-      #   @return [String]
-      # @!attribute [r] publication_names
-      #   Publication names requested from pgoutput.
-      #   @return [Array<String>]
-      # @!attribute [r] start_lsn
-      #   Optional normalized starting LSN.
-      #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -288,9 +236,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -323,9 +268,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -358,9 +300,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -393,9 +332,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -428,9 +364,6 @@ module Pgoutput
       # @!attribute [r] start_lsn
       #   Optional normalized starting LSN.
       #   @return [String, nil]
-      # @!attribute [r] plugin
-      #   Logical decoding output plugin name.
-      #   @return [String]
       # @!attribute [r] proto_version
       #   pgoutput protocol version.
       #   @return [Integer]
@@ -467,7 +400,6 @@ module Pgoutput
       #   names to pass to pgoutput
       # @param start_lsn [String, Integer, nil] starting LSN as a PostgreSQL LSN
       #   string, an integer WAL position, or `nil` for `0/0`
-      # @param plugin [#to_s] logical decoding plugin name
       # @param proto_version [#to_int, #to_s] pgoutput protocol version
       # @param binary [Object] truthy to request binary column values
       # @param messages [Object] truthy to request logical decoding messages
@@ -482,7 +414,7 @@ module Pgoutput
       #   settings are invalid
       # @raise [ArgumentError] if `start_lsn`, `proto_version`, or
       #   `feedback_interval` cannot be coerced
-      def initialize: (database_url: untyped, slot_name: untyped, publication_names: untyped, ?start_lsn: untyped?, ?plugin: untyped, ?proto_version: untyped, ?binary: bool, ?messages: bool, ?auto_create_slot: bool, ?temporary_slot: bool, ?feedback_interval: untyped) -> void
+      def initialize: (database_url: untyped, slot_name: untyped, publication_names: untyped, ?start_lsn: untyped?, ?proto_version: untyped, ?binary: bool, ?messages: bool, ?auto_create_slot: bool, ?temporary_slot: bool, ?feedback_interval: untyped) -> void
 
       # Starting LSN to render in `START_REPLICATION`.
       #

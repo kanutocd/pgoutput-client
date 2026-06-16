@@ -21,23 +21,38 @@ module Pgoutput
 
       @latest_lsn: untyped
 
+      @acked_lsn: untyped
+
       @last_feedback_at: untyped
 
+      @last_keepalive_at: untyped
+
       @running: untyped
+
+      @stop_requested: untyped
+
+      # Latest confirmed WAL position observed by this stream.
+      #
+      # @return [Integer]
+      attr_reader latest_lsn: untyped
+
+      attr_reader acked_lsn: untyped
+
+      attr_reader last_keepalive_at: untyped
 
       # Build a stream loop.
       #
       # @param connection [Connection] replication connection
       # @param configuration [Configuration] stream configuration
       # @return [void]
-      def initialize: (connection: untyped, configuration: untyped) -> void
+      def initialize: (connection: untyped, configuration: untyped, ?acked_lsn: untyped) -> void
 
       # Start the stream loop.
       #
       # The method blocks while the stream is running. For every XLogData
       # envelope, it yields the raw pgoutput payload and the parsed envelope
       # metadata. When no CopyData payload is currently available, the loop
-      # continues and checks again.
+      # pauses briefly before checking again.
       #
       # @yield [payload, metadata] called for each XLogData payload
       # @yieldparam payload [String] frozen raw pgoutput payload bytes
@@ -52,7 +67,11 @@ module Pgoutput
       # Stop the stream loop after the current iteration.
       #
       # @return [void]
-      def stop: () -> untyped
+      def stop: () -> nil
+
+      def running?: () -> bool
+
+      def ack: (untyped lsn) -> untyped
 
       private
 
@@ -61,6 +80,8 @@ module Pgoutput
       def send_periodic_feedback: () -> (nil | untyped)
 
       def send_feedback: (reply_requested: untyped) -> untyped
+
+      def normalize_lsn_value: (untyped value) -> untyped
 
       def monotonic_time: () -> untyped
     end

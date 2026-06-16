@@ -1,0 +1,99 @@
+module Pgoutput
+  module Client
+    # High-level logical replication client facade.
+    #
+    # `Runner` is the simplest public entry point for consumers that want to
+    # stream raw pgoutput payloads without manually managing a replication
+    # connection. It owns the connection lifecycle for one logical replication
+    # stream:
+    #
+    # 1. Build an immutable {Configuration} from keyword arguments.
+    # 2. Open a PostgreSQL replication connection.
+    # 3. Optionally create the configured replication slot.
+    # 4. Start logical replication.
+    # 5. Yield raw pgoutput payload bytes and {XLogData} metadata.
+    # 6. Close the connection when streaming exits.
+    #
+    # If a live stream loses its connection, the runner retries a small number
+    # of times with a backoff and resumes from the latest confirmed WAL
+    # position. Replay, checkpointing, and deduplication are not owned here;
+    # those concerns belong to the downstream CDC runtime and sink layer.
+    #
+    # @example Stream raw pgoutput messages
+    #   runner = Pgoutput::Client::Runner.new(
+    #     database_url: "postgres://localhost/app",
+    #     slot_name: "cdc_slot",
+    #     publication_names: ["app_publication"]
+    #   )
+    #
+    #   runner.start do |payload, metadata|
+    #     puts "received #{payload.bytesize} bytes at #{metadata.wal_end_lsn}"
+    #   end
+    #
+    # @see Configuration
+    # @see Connection
+    # @see Stream
+    # @api public
+    class Runner
+      @configuration: untyped
+
+      @stopped: untyped
+
+      @running: untyped
+
+      @stream: untyped
+
+      @resume_lsn: untyped
+
+      @acked_lsn: untyped
+
+      @slot_created: untyped
+
+      @last_error: untyped
+
+      @reconnect_attempts: untyped
+
+      DEFAULT_RECONNECT_ATTEMPTS: 3
+
+      DEFAULT_RECONNECT_BACKOFF: ::Float
+
+      attr_reader configuration: untyped
+
+      attr_reader last_error: untyped
+
+      def initialize: (**untyped options) -> void
+
+      def start: () ?{ (?) -> untyped } -> untyped
+
+      def stop: () -> nil
+
+      def restart: () ?{ (?) -> untyped } -> untyped
+
+      def running?: () -> bool
+
+      def stopped?: () -> bool
+
+      def connected?: () -> bool
+
+      def ack: (untyped lsn) -> untyped
+
+      def monitor: () -> Pgoutput::Client::RunnerState
+
+      private
+
+      def setup_connection: (untyped connection) -> untyped
+
+      def run_stream_cycle: (untyped configuration) { (?) -> untyped } -> untyped
+
+      def configuration_for_resume: () -> untyped
+
+      def normalize_lsn_value: (untyped value) -> untyped
+
+      def current_lsn_string: (untyped value) -> untyped
+
+      def reconnect_backoff_for: (untyped attempts) -> untyped
+
+      def sleep: (untyped duration) -> untyped
+    end
+  end
+end

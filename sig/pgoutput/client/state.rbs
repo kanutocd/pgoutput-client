@@ -1,0 +1,29 @@
+module Pgoutput
+  module Client
+    class RunnerStateData < Data
+      attr_reader running: bool
+      attr_reader stop_requested: bool
+      attr_reader connected: bool
+      attr_reader last_received_lsn: String?
+      attr_reader last_feedback_lsn: String?
+      attr_reader last_keepalive_at: Time?
+      attr_reader last_error: String?
+      attr_reader reconnect_attempts: Integer
+
+      def self.new: (
+        running: bool,
+        stop_requested: bool,
+        connected: bool,
+        last_received_lsn: String?,
+        last_feedback_lsn: String?,
+        last_keepalive_at: Time?,
+        last_error: String?,
+        reconnect_attempts: Integer
+      ) -> instance
+    end
+
+    class RunnerState < RunnerStateData
+      def stopped?: () -> bool
+    end
+  end
+end
