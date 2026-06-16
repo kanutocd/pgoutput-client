@@ -60,17 +60,12 @@ namespace :e2e do
 
   desc "Wait for Docker PostgreSQL to accept E2E connections"
   task :wait do
-    ruby = <<~RUBY
-      require_relative "test/support/e2e_postgres"
-
-      PgoutputClientE2E.wait_for_postgres!
-    RUBY
-
     sh [
       RbConfig.ruby,
       "-Ilib:test",
+      "-r./test/support/e2e_postgres",
       "-e",
-      ruby.inspect
+      "PgoutputClientE2E.wait_for_postgres!".inspect
     ].join(" ")
   end
 
