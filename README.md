@@ -2,7 +2,6 @@
 
 [![Gem Version](https://badge.fury.io/rb/pgoutput-client.svg)](https://badge.fury.io/rb/pgoutput-client)
 [![CI](https://github.com/kanutocd/pgoutput-client/workflows/CI/badge.svg)](https://github.com/kanutocd/pgoutput-client/actions)
-[![Coverage Status](https://codecov.io/gh/kanutocd/pgoutput-client/branch/main/graph/badge.svg)](https://codecov.io/gh/kanutocd/pgoutput-client)
 [![Ruby Version](https://img.shields.io/badge/ruby-%3E%3D%203.4-ruby.svg)](https://www.ruby-lang.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -338,22 +337,30 @@ bundle exec rake yard
 
 ### End-to-End PostgreSQL
 
-Bring up the Docker-backed PostgreSQL target:
+Run the full Docker-backed E2E flow and clean up afterward:
 
 ```bash
-bundle exec rake e2e:up
+script/test-e2e
 ```
 
-Run the replication test against it:
+Keep PostgreSQL running after the test for debugging:
 
 ```bash
+KEEP_E2E_POSTGRES=1 script/test-e2e
+```
+
+You can also run the steps manually:
+
+```bash
+script/e2e-up
 PGOUTPUT_CLIENT_E2E=1 bundle exec rake test:e2e
+script/e2e-down
 ```
 
-Tear it down when you are done:
+Equivalent Rake task:
 
 ```bash
-bundle exec rake e2e:down
+bundle exec rake e2e:run
 ```
 
 ---

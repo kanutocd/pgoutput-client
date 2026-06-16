@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# frozen_string_literal: true
+
+set -euo pipefail
+
+bundle exec rake e2e:up e2e:wait

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# frozen_string_literal: true
+
+set -euo pipefail
+
+cleanup() {
+  if [[ "${KEEP_E2E_POSTGRES:-0}" != "1" ]]; then
+    bundle exec rake e2e:down
+  fi
+}
+
+trap cleanup EXIT
+
+bundle exec rake e2e:up e2e:wait
+PGOUTPUT_CLIENT_E2E=1 bundle exec rake test:e2e

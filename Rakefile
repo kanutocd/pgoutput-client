@@ -58,8 +58,34 @@ namespace :e2e do
     sh "docker compose -f docker-compose.e2e.yml up -d"
   end
 
+  desc "Wait for Docker PostgreSQL to accept E2E connections"
+  task :wait do
+    ruby = <<~RUBY
+      require_relative "test/support/e2e_postgres"
+
+      PgoutputClientE2E.wait_for_postgres!
+    RUBY
+
+    sh [
+      RbConfig.ruby,
+      "-Ilib:test",
+      "-e",
+      ruby.inspect
+    ].join(" ")
+  end
+
   desc "Stop Docker PostgreSQL for E2E tests"
   task :down do
     sh "docker compose -f docker-compose.e2e.yml down -v"
+  end
+
+  desc "Run E2E tests with Docker PostgreSQL and clean up afterward"
+  task run: :up do
+    begin
+      Rake::Task["e2e:wait"].invoke
+      sh({ "PGOUTPUT_CLIENT_E2E" => "1" }, "bundle exec rake test:e2e")
+    ensure
+      Rake::Task["e2e:down"].invoke unless ENV["KEEP_E2E_POSTGRES"] == "1"
+    end
   end
 end
