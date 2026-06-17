@@ -7,12 +7,14 @@ class RunnerTest < Minitest::Test
   class FakeConnection
     attr_reader :calls
 
-    def initialize
+    def initialize(create_slot_error: nil)
       @calls = []
+      @create_slot_error = create_slot_error
     end
 
     def create_replication_slot
       calls << :create_replication_slot
+      raise @create_slot_error if @create_slot_error
     end
 
     def start_replication
@@ -337,6 +339,39 @@ class RunnerTest < Minitest::Test
     end
 
     assert_equal %i[create_replication_slot start_replication close], fake_connection.calls
+  end
+
+  def test_start_continues_when_auto_created_slot_already_exists
+    error = Pgoutput::Client::ConnectionError.new('ERROR: replication slot "slot1" already exists')
+    fake_connection = FakeConnection.new(create_slot_error: error)
+    yielded = []
+
+    Pgoutput::Client::Connection.stub(:open, fake_connection) do
+      with_fake_stream do
+        Pgoutput::Client::Runner.new(**options(auto_create_slot: true)).start do |payload, metadata|
+          yielded << [payload, metadata]
+        end
+      end
+    end
+
+    assert_equal %i[create_replication_slot start_replication close], fake_connection.calls
+    assert_equal [["payload", :metadata]], yielded
+  end
+
+  def test_start_raises_when_auto_create_slot_fails_for_other_reason
+    error = Pgoutput::Client::ConnectionError.new("ERROR: permission denied to create replication slot")
+    fake_connection = FakeConnection.new(create_slot_error: error)
+
+    raised = assert_raises(Pgoutput::Client::ConnectionError) do
+      Pgoutput::Client::Connection.stub(:open, fake_connection) do
+        with_fake_stream do
+          Pgoutput::Client::Runner.new(**options(auto_create_slot: true)).start { |_payload, _metadata| }
+        end
+      end
+    end
+
+    assert_equal "ERROR: permission denied to create replication slot", raised.message
+    assert_equal %i[create_replication_slot close], fake_connection.calls
   end
 
   def test_stop_returns_nil

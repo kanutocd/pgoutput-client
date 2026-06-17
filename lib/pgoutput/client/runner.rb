@@ -194,12 +194,22 @@ module Pgoutput
       private
 
       def setup_connection(connection)
-        if configuration.auto_create_slot && !@slot_created
-          connection.create_replication_slot
-          @slot_created = true
-        end
+        ensure_replication_slot(connection) if configuration.auto_create_slot && !@slot_created
 
         connection.start_replication
+      end
+
+      def ensure_replication_slot(connection)
+        connection.create_replication_slot
+        @slot_created = true
+      rescue ConnectionError => e
+        raise unless replication_slot_already_exists?(e)
+
+        @slot_created = true
+      end
+
+      def replication_slot_already_exists?(error)
+        error.message.match?(/replication slot .* already exists/i)
       end
 
       def run_stream_cycle(configuration, &block)

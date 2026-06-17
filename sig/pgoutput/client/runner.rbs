@@ -83,6 +83,10 @@ module Pgoutput
 
       def setup_connection: (untyped connection) -> untyped
 
+      def ensure_replication_slot: (untyped connection) -> untyped
+
+      def replication_slot_already_exists?: (untyped error) -> bool
+
       def run_stream_cycle: (untyped configuration) { (?) -> untyped } -> untyped
 
       def configuration_for_resume: () -> untyped

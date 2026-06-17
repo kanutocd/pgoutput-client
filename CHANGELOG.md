@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+## 0.2.3 - 2026-06-17
+
+### Fixed
+
+* Fixed automatic replication slot creation when `auto_create_slot` is enabled.
+* Fixed startup failure when the configured replication slot already exists.
+* Improved logical replication restart behavior for persistent replication slots.
+* Improved lifecycle management of existing replication slots across process and container restarts.
+
+### Changed
+
+* `auto_create_slot` now follows **ensure slot exists** semantics.
+* Existing replication slots are treated as valid and reusable when automatic slot creation is enabled.
+* Slot creation remains automatic for missing slots and idempotent for existing slots.
+
+### Internal
+
+* Hardened replication slot lifecycle handling.
+* Expanded coverage around automatic slot creation scenarios.
+* Updated signatures and tests for slot creation behavior.
+
+
 ## 0.2.2 - 2026-06-17
 
 ### Added
