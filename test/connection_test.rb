@@ -4,12 +4,13 @@ require_relative "test_helper"
 
 class ConnectionTest < Minitest::Test
   class FakePGConnection
-    attr_reader :executed_sql, :copy_data_payloads
-    attr_accessor :copy_data_response, :finished, :raise_on
+    attr_reader :executed_sql, :copy_data_payloads, :get_copy_data_async_arguments
+    attr_accessor :copy_data_response, :finished, :raise_on, :socket_io
 
     def initialize
       @executed_sql = []
       @copy_data_payloads = []
+      @get_copy_data_async_arguments = []
       @finished = false
     end
 
@@ -23,8 +24,7 @@ class ConnectionTest < Minitest::Test
     def get_copy_data(async)
       raise PG::Error, "read failed" if raise_on == :get_copy_data
 
-      raise "expected async false" unless async == false
-
+      get_copy_data_async_arguments << async
       copy_data_response
     end
 
@@ -102,10 +102,29 @@ class ConnectionTest < Minitest::Test
     )
   end
 
-  def test_get_copy_data_reads_nonblocking_copy_data
+  def test_get_copy_data_reads_copy_data_after_socket_is_readable
     @pg_connection.copy_data_response = "payload"
 
     assert_equal "payload", @connection.get_copy_data
+    assert_equal [false], @pg_connection.get_copy_data_async_arguments
+  end
+
+  def test_get_copy_data_normalizes_false_to_nil
+    @pg_connection.copy_data_response = false
+
+    assert_nil @connection.get_copy_data
+    assert_equal [false], @pg_connection.get_copy_data_async_arguments
+  end
+
+  def test_get_copy_data_returns_nil_when_socket_is_idle
+    reader, writer = IO.pipe
+    @pg_connection.socket_io = reader
+
+    assert_nil @connection.get_copy_data
+    assert_empty @pg_connection.get_copy_data_async_arguments
+  ensure
+    reader&.close
+    writer&.close
   end
 
   def test_put_copy_data_writes_payload

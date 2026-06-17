@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+## 0.2.4 - 2026-06-17
+
+### Added
+
+- Added socket-aware replication stream polling.
+- Added E2E coverage for PostgreSQL restart and replication stream recovery.
+- Added connection readiness checks to E2E infrastructure.
+
+### Changed
+
+- Improved replication stream handling during idle periods.
+- Improved reconnect behavior after PostgreSQL restarts.
+- Improved standby feedback reliability during long-running streams.
+- Improved E2E test stability across PostgreSQL startup and restart scenarios.
+- Normalized `PG#get_copy_data` idle responses to simplify stream processing.
+
+### Fixed
+
+- Fixed replication stream recovery after PostgreSQL restart.
+- Fixed handling of idle COPY stream reads.
+- Fixed reconnect loops triggered by PostgreSQL replication timeouts.
+- Fixed E2E race conditions during PostgreSQL initialization.
+- Fixed replication slot creation behavior when a slot already exists.
+- Fixed several edge cases uncovered by Mammoth integration testing.
+
+### Documentation
+
+- Expanded YARD documentation coverage to 98.95%.
+
 ## 0.2.3 - 2026-06-17
 
 ### Fixed

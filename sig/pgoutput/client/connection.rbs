@@ -61,9 +61,11 @@ module Pgoutput
 
       # Receive one CopyData payload from the server.
       #
-      # The call is non-blocking because the underlying `pg` call receives
-      # `false` for its blocking argument. `nil` means no complete CopyData
-      # payload is currently available.
+      # The stream must not block forever while PostgreSQL is idle, because the
+      # caller needs opportunities to send periodic standby feedback. Wait
+      # briefly for socket readability, then use the pg driver's blocking
+      # CopyData read only when data is available. `nil` means the stream is
+      # currently idle.
       #
       # @return [String, nil] raw CopyData payload or `nil`
       # @raise [ConnectionError] if receiving fails
@@ -84,6 +86,8 @@ module Pgoutput
       def close: () -> (untyped | nil)
 
       private
+
+      def copy_data_readable?: () -> bool
 
       def exec: (untyped sql) -> untyped
     end

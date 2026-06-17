@@ -76,14 +76,19 @@ module Pgoutput
 
       # Receive one CopyData payload from the server.
       #
-      # The call is non-blocking because the underlying `pg` call receives
-      # `false` for its blocking argument. `nil` means no complete CopyData
-      # payload is currently available.
+      # The stream must not block forever while PostgreSQL is idle, because the
+      # caller needs opportunities to send periodic standby feedback. Wait
+      # briefly for socket readability, then use the pg driver's blocking
+      # CopyData read only when data is available. `nil` means the stream is
+      # currently idle.
       #
       # @return [String, nil] raw CopyData payload or `nil`
       # @raise [ConnectionError] if receiving fails
       def get_copy_data # rubocop:disable Naming/AccessorMethodName
-        @pg_connection.get_copy_data(false)
+        return nil unless copy_data_readable?
+
+        copy_data = @pg_connection.get_copy_data(false)
+        copy_data == false ? nil : copy_data
       rescue PG::Error => e
         raise ConnectionError, e.message
       end
@@ -109,6 +114,15 @@ module Pgoutput
       end
 
       private
+
+      def copy_data_readable?
+        return true unless @pg_connection.respond_to?(:socket_io)
+
+        socket = @pg_connection.socket_io
+        return true unless socket
+
+        !!IO.select([socket], nil, nil, 0.1)
+      end
 
       def exec(sql)
         @pg_connection.exec(sql)

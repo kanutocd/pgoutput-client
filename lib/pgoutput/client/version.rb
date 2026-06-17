@@ -5,6 +5,6 @@ module Pgoutput
     # Current pgoutput-client gem version.
     #
     # @return [String]
-    VERSION = "0.2.3"
+    VERSION = "0.2.4"
   end
 end

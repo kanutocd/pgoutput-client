@@ -4,7 +4,8 @@ require "securerandom"
 require "timeout"
 
 module PgoutputClientE2E
-  DEFAULT_DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:55432/pgoutput_client_test"
+  DEFAULT_PORT = ENV.fetch("PGOUTPUT_CLIENT_E2E_PORT", "55432")
+  DEFAULT_DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:#{DEFAULT_PORT}/pgoutput_client_test".freeze
   WAIT_TIMEOUT = 30
 
   module_function

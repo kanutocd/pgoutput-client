@@ -13,6 +13,13 @@ require_relative "client/connection"
 require_relative "client/stream"
 require_relative "client/runner"
 
+# Namespace for PostgreSQL pgoutput logical replication components.
+#
+# The top-level namespace is shared by pgoutput ecosystem gems. This gem
+# defines only the `Pgoutput::Client` transport namespace and leaves protocol
+# parsing, value decoding, and CDC normalization to sibling libraries.
+#
+# @api public
 module Pgoutput
   # Namespace for PostgreSQL logical replication transport support.
   #

@@ -363,6 +363,57 @@ Equivalent Rake task:
 bundle exec rake e2e:run
 ```
 
+## Transport lifecycle behavior
+
+`pgoutput-client` owns PostgreSQL logical replication transport and lifecycle
+management. It opens the replication connection, optionally creates the logical
+replication slot, starts streaming, sends standby status feedback, and retries
+reconnectable failures.
+
+### Idle standby feedback
+
+Long-running replication streams can be quiet for long periods when no WAL
+changes are produced. During those idle periods the client wakes periodically
+and sends standby status feedback so PostgreSQL does not terminate the walsender
+for replication timeout.
+
+Control the feedback cadence with `feedback_interval`:
+
+```ruby
+runner = Pgoutput::Client::Runner.new(
+  database_url: ENV.fetch("DATABASE_URL"),
+  slot_name: "mammoth_live",
+  publication_names: ["mammoth_publication"],
+  feedback_interval: 10.0
+)
+```
+
+### Idempotent automatic slot creation
+
+When `auto_create_slot` is enabled, the client treats slot creation as
+"ensure this slot exists". Missing slots are created before streaming; existing
+slots are reused and do not cause startup failure.
+
+```ruby
+runner = Pgoutput::Client::Runner.new(
+  database_url: ENV.fetch("DATABASE_URL"),
+  slot_name: "mammoth_live",
+  publication_names: ["mammoth_publication"],
+  auto_create_slot: true,
+  temporary_slot: false
+)
+```
+
+Publication creation remains outside this gem. Create publications through
+application migrations, database bootstrap SQL, or infrastructure tooling.
+
+### Restart recovery
+
+After a stream has connected successfully, transient PostgreSQL outages are
+retried through the reconnect lifecycle. This includes ordinary container or
+process restart windows where PostgreSQL temporarily refuses connections or
+reports that the database system is starting up.
+
 ---
 
 ## License

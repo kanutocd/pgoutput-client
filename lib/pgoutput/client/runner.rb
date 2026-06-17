@@ -37,7 +37,17 @@ module Pgoutput
     # @see Stream
     # @api public
     class Runner
+      # Default number of reconnect attempts after a previously healthy stream
+      # fails. The default is intentionally large enough to survive ordinary
+      # PostgreSQL restart windows.
+      #
+      # @return [Integer]
       DEFAULT_RECONNECT_ATTEMPTS = 30
+
+      # Base reconnect backoff, in seconds. Attempt `n` sleeps for
+      # `n * DEFAULT_RECONNECT_BACKOFF`.
+      #
+      # @return [Float]
       DEFAULT_RECONNECT_BACKOFF = 0.5
 
       # Configuration used by this runner.
