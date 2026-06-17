@@ -81,34 +81,32 @@ class PostgresLogicalReplicationTest < Minitest::Test
         feedback_interval: configuration.feedback_interval
       )
       payloads = Queue.new
-      payload_count = 0
-      payload_count_mutex = Mutex.new
 
       runner_thread = Thread.new do
         runner.start do |payload, metadata|
           payloads << [payload, metadata]
-          payload_count_mutex.synchronize do
-            payload_count += 1
-            runner.stop if payload_count >= 2
-          end
         end
       end
+
+      wait_for_runner_connection(runner)
 
       schema.fetch(:connection).exec(
         %(INSERT INTO #{schema.fetch(:table_name)} (name) VALUES ('alpha'))
       )
-      begin
-        first_payload, first_metadata = wait_for_payload(payloads)
-      rescue Timeout::Error
-        PgoutputClientE2E.restart_postgres!
-        PgoutputClientE2E.wait_for_postgres!
+      first_payload, first_metadata = wait_for_payload(payloads) do |payload, _metadata|
+        payload.include?("alpha")
       end
+
+      PgoutputClientE2E.restart_postgres!
+      PgoutputClientE2E.wait_for_postgres!
 
       PgoutputClientE2E.normal_connection.exec(
         %(INSERT INTO #{schema.fetch(:table_name)} (name) VALUES ('beta'))
       )
 
-      second_payload, second_metadata = wait_for_payload(payloads)
+      second_payload, second_metadata = wait_for_payload(payloads) do |payload, _metadata|
+        payload.include?("beta")
+      end
 
       runner.stop
       runner_thread.value
@@ -163,7 +161,17 @@ class PostgresLogicalReplicationTest < Minitest::Test
 
   def wait_for_payload(queue)
     Timeout.timeout(PgoutputClientE2E::WAIT_TIMEOUT) do
-      queue.pop
+      loop do
+        payload, metadata = queue.pop
+        return [payload, metadata] unless block_given?
+        return [payload, metadata] if yield(payload, metadata)
+      end
+    end
+  end
+
+  def wait_for_runner_connection(runner)
+    Timeout.timeout(PgoutputClientE2E::WAIT_TIMEOUT) do
+      sleep 0.01 until runner.connected?
     end
   end
 end

@@ -2,6 +2,49 @@
 
 ## Unreleased
 
+## 0.2.2 - 2026-06-17
+
+### Added
+
+* Added periodic standby status feedback while replication streams are idle.
+* Added E2E coverage for PostgreSQL restart and replication recovery.
+* Added E2E validation of replication slot resume behavior after reconnect.
+* Added test coverage for idle replication streams.
+
+### Changed
+
+* Increased reconnect retry budget to better tolerate PostgreSQL restart windows.
+* Improved replication stream resilience during transient PostgreSQL outages.
+* Improved reconnect behavior when PostgreSQL is starting up and temporarily rejecting connections.
+
+### Fixed
+
+* Fixed replication timeout during idle logical replication streams.
+
+* Fixed walsender termination caused by missing standby feedback during periods without WAL activity.
+
+* Fixed reconnect handling after PostgreSQL restart.
+
+* Fixed connection recovery when PostgreSQL reports:
+
+  ```
+  FATAL: the database system is starting up
+  ```
+
+* Fixed E2E PostgreSQL test infrastructure and restart recovery validation.
+
+* Fixed test isolation between unit and E2E PostgreSQL connection paths.
+
+### Internal
+
+* Expanded transport lifecycle validation.
+* Improved operational reliability of long-running replication sessions.
+
+
+## [0.2.1] - 2026-06-16
+
+- Gemspec summary and description improvement release only
+
 ## [0.2.0] - 2026-06-16
 
 ### Fixed

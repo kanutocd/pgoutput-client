@@ -170,6 +170,30 @@ class StreamTest < Minitest::Test
     assert_equal [0.01], stream.sleep_calls
   end
 
+  def test_idle_stream_sends_periodic_feedback_without_xlog_data
+    connection = FakeConnection.new([nil, nil, xlog_payload(body: "done")])
+    stream_class = Class.new(IdlePollingStream) do
+      def initialize(**)
+        @ticks = [0.0, 0.25, 0.75, 0.75, 0.75, 0.75]
+        super
+      end
+
+      def monotonic_time
+        @ticks.shift || 0.75
+      end
+    end
+    stream = stream_class.new(connection: connection, configuration: config(feedback_interval: 0.5))
+
+    stream.start do
+      stream.stop
+    end
+
+    assert_equal [0.01, 0.01], stream.sleep_calls
+    assert_equal 2, connection.sent_payloads.length
+    assert_equal "r".ord, connection.sent_payloads.first.getbyte(0)
+    assert_equal [0x10, 0x10, 0x10], connection.sent_payloads.first.byteslice(1, 24).unpack("Q>Q>Q>")
+  end
+
   def test_initialize_accepts_string_acknowledged_lsn
     stream = Pgoutput::Client::Stream.new(
       connection: FakeConnection.new([]),

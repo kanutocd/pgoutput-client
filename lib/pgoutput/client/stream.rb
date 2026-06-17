@@ -78,6 +78,7 @@ module Pgoutput
         while @running
           copy_data = @connection.get_copy_data
           if copy_data.nil?
+            send_periodic_feedback
             sleep 0.01
             next
           end

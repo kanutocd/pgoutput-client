@@ -29,7 +29,13 @@ module PgoutputClientE2E
 
   def normal_connection
     require_pg!
+    reset_test_pg_stub!
     PG.connect(database_url)
+  end
+
+  def reset_test_pg_stub!
+    PG.connect_result = nil if PG.respond_to?(:connect_result=)
+    PG.connect_error = nil if PG.respond_to?(:connect_error=)
   end
 
   def unique_name(prefix)
@@ -105,7 +111,6 @@ module PgoutputClientE2E
     [table_name, publication_name, slot_name, connection]
   end
 
-  # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
   def cleanup_schema(connection, table_name, publication_name)
     return unless connection
 
@@ -119,7 +124,6 @@ module PgoutputClientE2E
   ensure
     cleanup_connection&.close unless cleanup_connection&.finished?
   end
-  # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
   def drop_schema_resources(connection, table_name, publication_name)
     connection.exec(%(DROP PUBLICATION IF EXISTS #{publication_name})) if publication_name

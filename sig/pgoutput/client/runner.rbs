@@ -53,7 +53,7 @@ module Pgoutput
 
       @reconnect_attempts: untyped
 
-      DEFAULT_RECONNECT_ATTEMPTS: 3
+      DEFAULT_RECONNECT_ATTEMPTS: 30
 
       DEFAULT_RECONNECT_BACKOFF: ::Float
 

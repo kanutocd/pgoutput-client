@@ -37,7 +37,7 @@ module Pgoutput
     # @see Stream
     # @api public
     class Runner
-      DEFAULT_RECONNECT_ATTEMPTS = 3
+      DEFAULT_RECONNECT_ATTEMPTS = 30
       DEFAULT_RECONNECT_BACKOFF = 0.5
 
       # Configuration used by this runner.
@@ -70,6 +70,7 @@ module Pgoutput
         @resume_lsn = configuration.start_lsn
         @acked_lsn = configuration.start_lsn
         @slot_created = false
+        @connected_once = false
         @last_error = nil
         @reconnect_attempts = 0
       end
@@ -204,15 +205,17 @@ module Pgoutput
       def run_stream_cycle(configuration, &block)
         connection = Connection.open(configuration)
         setup_connection(connection)
+        @connected_once = true
         @stream = Stream.new(connection:, configuration:, acked_lsn: @acked_lsn)
         @stream.start(&block)
         :done
       rescue ConnectionError => e
         @last_error = e
-        raise if @stopped || @stream.nil?
+        raise if @stopped
+        raise if @stream.nil? && !@connected_once
 
-        @resume_lsn = @stream.latest_lsn || @resume_lsn
-        @acked_lsn = @stream.acked_lsn || @acked_lsn
+        @resume_lsn = @stream&.latest_lsn || @resume_lsn
+        @acked_lsn = @stream&.acked_lsn || @acked_lsn
         :retry
       ensure
         @stream = nil

@@ -222,8 +222,10 @@ class RunnerTest < Minitest::Test
     end
 
     assert_equal "stream still down", error.message
-    assert_equal [0.5, 1.0, 1.5], runner.sleep_calls
-    assert_equal 4, fake_connection.calls.count(:start_replication)
+    assert_equal 30, runner.sleep_calls.length
+    assert_equal 0.5, runner.sleep_calls.first
+    assert_equal 15.0, runner.sleep_calls.last
+    assert_equal 31, fake_connection.calls.count(:start_replication)
     assert_equal "stream still down", runner.monitor.last_error
   end
 
@@ -265,6 +267,44 @@ class RunnerTest < Minitest::Test
     assert_equal Pgoutput::Client::LSN.parse("0/30"), runner.ack("0/30")
     assert_equal "0/30", runner.monitor.last_feedback_lsn
   end
+
+  # rubocop:disable Metrics/MethodLength
+  def test_retries_connection_open_errors_after_a_prior_successful_stream
+    attempts = 0
+    yielded = []
+    RetryableStream.configurations = []
+    runner = RetryingRunner.new(**options(start_lsn: "0/10"))
+
+    opener = lambda do |_configuration|
+      attempts += 1
+      raise Pgoutput::Client::ConnectionError, "postgres restarting" if attempts == 2
+
+      FakeConnection.new
+    end
+
+    stream_factory = lambda do |connection:, configuration:, **kwargs|
+      if attempts == 1
+        RetryableStream.new(connection:, configuration:, **kwargs)
+      else
+        FakeStream.new(connection:, configuration:)
+      end
+    end
+
+    Pgoutput::Client::Connection.stub(:open, opener) do
+      Pgoutput::Client::Stream.stub(:new, stream_factory) do
+        runner.start do |payload, metadata|
+          yielded << [payload, metadata]
+          runner.stop if yielded.length >= 2
+        end
+      end
+    end
+
+    assert_equal 3, attempts
+    assert_equal [0.5, 1.0], runner.sleep_calls
+    assert_equal [["first", :first_metadata], ["payload", :metadata]], yielded
+    assert_equal "postgres restarting", runner.monitor.last_error
+  end
+  # rubocop:enable Metrics/MethodLength
 
   def test_start_requires_block
     runner = Pgoutput::Client::Runner.new(**options)
