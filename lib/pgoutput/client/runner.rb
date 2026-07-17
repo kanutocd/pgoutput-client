@@ -111,15 +111,13 @@ module Pgoutput
 
         loop do
           current_configuration = configuration_for_resume
-          case run_stream_cycle(current_configuration, &block)
-          when :done
-            break
-          when :retry
-            @reconnect_attempts += 1
-            raise @last_error if @reconnect_attempts > DEFAULT_RECONNECT_ATTEMPTS
+          result = run_stream_cycle(current_configuration, &block)
+          break if result == :done
 
-            sleep(reconnect_backoff_for(@reconnect_attempts))
-          end
+          @reconnect_attempts += 1
+          raise @last_error if @reconnect_attempts > DEFAULT_RECONNECT_ATTEMPTS
+
+          sleep(reconnect_backoff_for(@reconnect_attempts))
         end
       ensure
         @running = false

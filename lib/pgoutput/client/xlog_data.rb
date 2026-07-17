@@ -44,7 +44,7 @@ module Pgoutput
         wal_start = unpack_u64(binary, 1)
         wal_end = unpack_u64(binary, 9)
         server_clock = unpack_u64(binary, 17)
-        payload = binary.byteslice(25..)&.freeze || "".b.freeze
+        payload = binary.unpack1("@25a*").freeze
 
         Ractor.make_shareable(new(wal_start, wal_end, server_clock, payload))
       end

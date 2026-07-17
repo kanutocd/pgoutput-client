@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Added `SlotStatus#retained_wal_bytes`, computed by PostgreSQL from the current
+  WAL position and the slot's `restart_lsn`.
+
 ## 0.3.0 - 2026-07-17
 
 ### Added

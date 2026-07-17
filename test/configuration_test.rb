@@ -108,4 +108,12 @@ class ConfigurationTest < Minitest::Test
   def test_rejects_invalid_lsn
     assert_raises(ArgumentError) { build(start_lsn: "not-an-lsn") }
   end
+
+  def test_rejects_non_boolean_options
+    %i[binary messages auto_create_slot temporary_slot].each do |option|
+      error = assert_raises(ArgumentError) { build(**{ option => nil }) }
+
+      assert_equal "#{option} must be true or false", error.message
+    end
+  end
 end

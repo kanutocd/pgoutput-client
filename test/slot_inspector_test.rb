@@ -57,6 +57,7 @@ class SlotInspectorTest < Minitest::Test
                                         catalog_xmin: "900",
                                         restart_lsn: "0/10",
                                         confirmed_flush_lsn: "0/20",
+                                        retained_wal_bytes: 8192,
                                         wal_status: "reserved",
                                         safe_wal_size: 4096,
                                         inactive_since: nil,
@@ -73,14 +74,22 @@ class SlotInspectorTest < Minitest::Test
     assert_equal "logical", status.slot_type
     assert_equal "0/10", status.restart_lsn
     assert_equal "0/20", status.confirmed_flush_lsn
+    assert_equal 8192, status.retained_wal_bytes
     assert_equal "reserved", status.wal_status
     assert_equal 4096, status.safe_wal_size
     assert status.active
     assert_predicate connection, :closed?
     assert_equal ["slot1"], connection.queries.fetch(0).fetch(1)
-    assert_match(/to_jsonb\(slot\)/, connection.queries.fetch(0).fetch(0))
   end
   # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+  def test_query_computes_retained_wal_bytes_inside_postgresql
+    assert_match(/to_jsonb\(slot\)/, Pgoutput::Client::SlotInspector::QUERY)
+    assert_match(
+      /pg_wal_lsn_diff\(pg_current_wal_lsn\(\), slot\.restart_lsn\)/,
+      Pgoutput::Client::SlotInspector::QUERY
+    )
+  end
 
   def test_fetch_accepts_decoded_catalog_hash_from_pg_type_maps
     connection = FakeConnection.new(row: {
@@ -95,6 +104,7 @@ class SlotInspectorTest < Minitest::Test
 
     assert_equal "slot1", status.slot_name
     refute status.active
+    assert_nil status.retained_wal_bytes
     assert_nil status.wal_status
   end
 
@@ -115,6 +125,33 @@ class SlotInspectorTest < Minitest::Test
 
     assert_equal "catalog unavailable", error.message
     assert_predicate connection, :closed?
+  end
+
+  def test_fetch_wraps_connection_open_errors
+    require "pg"
+    slot_inspector = Pgoutput::Client::SlotInspector.new(
+      database_url: "postgres://localhost/app",
+      connection_factory: ->(_database_url) { raise PG::Error, "connection unavailable" }
+    )
+
+    error = assert_raises(Pgoutput::Client::ConnectionError) do
+      slot_inspector.fetch("slot1")
+    end
+
+    assert_equal "connection unavailable", error.message
+  end
+
+  def test_fetch_opens_default_pg_connection
+    require "pg"
+    connection = FakeConnection.new
+    PG.connect_result = connection
+    slot_inspector = Pgoutput::Client::SlotInspector.new(database_url: "postgres://localhost/app")
+
+    assert_nil slot_inspector.fetch("missing")
+    assert_equal ["postgres://localhost/app", nil], PG.last_connect_args
+    assert_predicate connection, :closed?
+  ensure
+    PG.connect_result = nil
   end
 
   def test_fetch_does_not_close_already_finished_connection

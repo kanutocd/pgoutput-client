@@ -10,6 +10,7 @@ module Pgoutput
       attr_reader catalog_xmin: String?
       attr_reader restart_lsn: String?
       attr_reader confirmed_flush_lsn: String?
+      attr_reader retained_wal_bytes: Integer?
       attr_reader wal_status: String?
       attr_reader safe_wal_size: Integer?
       attr_reader inactive_since: String?
@@ -26,6 +27,7 @@ module Pgoutput
         catalog_xmin: String?,
         restart_lsn: String?,
         confirmed_flush_lsn: String?,
+        retained_wal_bytes: Integer?,
         wal_status: String?,
         safe_wal_size: Integer?,
         inactive_since: String?,

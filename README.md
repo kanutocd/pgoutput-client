@@ -254,6 +254,7 @@ if status.nil?
 else
   puts status.restart_lsn
   puts status.confirmed_flush_lsn
+  puts status.retained_wal_bytes
   puts status.wal_status
   puts status.invalidation_reason
 end
@@ -278,7 +279,7 @@ WAL position, retention, and invalidation fields including:
 
 - `slot_name`, `plugin`, `slot_type`, and `database`
 - `active`, `active_pid`, and `inactive_since`
-- `restart_lsn` and `confirmed_flush_lsn`
+- `restart_lsn`, `confirmed_flush_lsn`, and `retained_wal_bytes`
 - `wal_status`, `safe_wal_size`, and `catalog_xmin`
 - `conflicting` and `invalidation_reason`
 

@@ -20,6 +20,7 @@ module Pgoutput
       :catalog_xmin,
       :restart_lsn,
       :confirmed_flush_lsn,
+      :retained_wal_bytes,
       :wal_status,
       :safe_wal_size,
       :inactive_since,
@@ -36,27 +37,18 @@ module Pgoutput
       # @param attributes [Hash{String, Symbol=>Object}] catalog attributes
       # @return [SlotStatus]
       def self.from_catalog(attributes)
-        fetch = lambda do |key|
-          next attributes[key] if attributes.key?(key)
-
-          attributes[key.to_sym]
-        end
+        value = ->(key) { attributes.fetch(key) { attributes[key.to_sym] } }
 
         new(
-          slot_name: fetch.call("slot_name"),
-          plugin: fetch.call("plugin"),
-          slot_type: fetch.call("slot_type"),
-          database: fetch.call("database"),
-          active: fetch.call("active") == true,
-          active_pid: fetch.call("active_pid"),
-          catalog_xmin: fetch.call("catalog_xmin"),
-          restart_lsn: fetch.call("restart_lsn"),
-          confirmed_flush_lsn: fetch.call("confirmed_flush_lsn"),
-          wal_status: fetch.call("wal_status"),
-          safe_wal_size: fetch.call("safe_wal_size"),
-          inactive_since: fetch.call("inactive_since"),
-          conflicting: fetch.call("conflicting"),
-          invalidation_reason: fetch.call("invalidation_reason")
+          slot_name: value.call("slot_name"), plugin: value.call("plugin"),
+          slot_type: value.call("slot_type"), database: value.call("database"),
+          active: value.call("active") == true, active_pid: value.call("active_pid"),
+          catalog_xmin: value.call("catalog_xmin"), restart_lsn: value.call("restart_lsn"),
+          confirmed_flush_lsn: value.call("confirmed_flush_lsn"),
+          retained_wal_bytes: value.call("retained_wal_bytes"),
+          wal_status: value.call("wal_status"), safe_wal_size: value.call("safe_wal_size"),
+          inactive_since: value.call("inactive_since"), conflicting: value.call("conflicting"),
+          invalidation_reason: value.call("invalidation_reason")
         )
       end
     end

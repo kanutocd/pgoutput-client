@@ -18,7 +18,14 @@ module Pgoutput
       #
       # @return [String]
       QUERY = <<~SQL
-        SELECT to_jsonb(slot) AS slot
+        SELECT
+          to_jsonb(slot) || jsonb_build_object(
+            'retained_wal_bytes',
+            CASE
+              WHEN slot.restart_lsn IS NULL THEN NULL
+              ELSE pg_wal_lsn_diff(pg_current_wal_lsn(), slot.restart_lsn)::bigint
+            END
+          ) AS slot
         FROM pg_catalog.pg_replication_slots AS slot
         WHERE slot.slot_name = $1
       SQL

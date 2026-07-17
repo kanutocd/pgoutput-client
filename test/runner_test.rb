@@ -397,6 +397,32 @@ class RunnerTest < Minitest::Test
     assert_nil Pgoutput::Client::Runner.new(**options).stop
   end
 
+  def test_restart_stops_then_starts_with_the_same_block
+    runner = Pgoutput::Client::Runner.new(**options)
+    calls = []
+    callback = proc { calls << :yielded }
+
+    runner.stub(:stop, -> { calls << :stop }) do
+      start = lambda do |&block|
+        calls << :start
+        block.call
+      end
+      runner.stub(:start, start) do
+        runner.restart(&callback)
+      end
+    end
+
+    assert_equal %i[stop start yielded], calls
+  end
+
+  def test_sleep_delegates_to_kernel
+    runner = Pgoutput::Client::Runner.new(**options)
+
+    Kernel.stub(:sleep, ->(duration) { assert_in_delta 0.25, duration }) do
+      runner.send(:sleep, 0.25)
+    end
+  end
+
   def test_stop_requests_active_stream_stop
     fake_connection = FakeConnection.new
     runner = Pgoutput::Client::Runner.new(**options)

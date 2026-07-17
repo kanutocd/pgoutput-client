@@ -37,7 +37,7 @@ class PostgresLogicalReplicationTest < Minitest::Test
       assert_equal "pgoutput", slot_status.plugin
       assert_equal "logical", slot_status.slot_type
       refute slot_status.active
-      refute_nil slot_status.restart_lsn
+      assert(slot_status.restart_lsn && slot_status.retained_wal_bytes >= 0)
 
       replication_connection.start_replication
 

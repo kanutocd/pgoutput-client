@@ -44,6 +44,19 @@ class ConnectionTest < Minitest::Test
     def finished? = finished
   end
 
+  class FakePGConnectionWithoutSocketIO
+    attr_reader :get_copy_data_async_arguments
+
+    def initialize
+      @get_copy_data_async_arguments = []
+    end
+
+    def get_copy_data(async)
+      get_copy_data_async_arguments << async
+      "payload"
+    end
+  end
+
   def setup
     @configuration = Pgoutput::Client::Configuration.new(
       database_url: "postgres://localhost/app",
@@ -114,6 +127,14 @@ class ConnectionTest < Minitest::Test
 
     assert_nil @connection.get_copy_data
     assert_equal [false], @pg_connection.get_copy_data_async_arguments
+  end
+
+  def test_get_copy_data_supports_pg_connections_without_socket_io
+    pg_connection = FakePGConnectionWithoutSocketIO.new
+    connection = Pgoutput::Client::Connection.new(configuration: @configuration, pg_connection:)
+
+    assert_equal "payload", connection.get_copy_data
+    assert_equal [false], pg_connection.get_copy_data_async_arguments
   end
 
   def test_get_copy_data_returns_nil_when_socket_is_idle
