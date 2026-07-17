@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.0 - 2026-07-17
+
 ### Added
 
 - Added `SlotStatus#retained_wal_bytes`, computed by PostgreSQL from the current
