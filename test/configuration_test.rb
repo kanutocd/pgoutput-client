@@ -15,7 +15,7 @@ class ConfigurationTest < Minitest::Test
   def test_defaults_are_frozen_and_boolean_false
     configuration = build
 
-    assert configuration.frozen?
+    assert_predicate configuration, :frozen?
     assert_equal "postgres://localhost/app", configuration.database_url
     assert_equal "slot1", configuration.slot_name
     assert_equal ["pub1"], configuration.publication_names
@@ -26,7 +26,7 @@ class ConfigurationTest < Minitest::Test
     refute configuration.messages
     refute configuration.auto_create_slot
     refute configuration.temporary_slot
-    assert_equal 10.0, configuration.feedback_interval
+    assert_in_delta(10.0, configuration.feedback_interval)
   end
 
   def test_accepts_array_publication_names_and_integer_lsn
@@ -54,7 +54,7 @@ class ConfigurationTest < Minitest::Test
     assert configuration.messages
     assert configuration.auto_create_slot
     assert configuration.temporary_slot
-    assert_equal 0.25, configuration.feedback_interval
+    assert_in_delta(0.25, configuration.feedback_interval)
   end
 
   def test_rejects_empty_publication_names

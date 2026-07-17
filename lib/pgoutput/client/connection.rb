@@ -121,7 +121,7 @@ module Pgoutput
         socket = @pg_connection.socket_io
         return true unless socket
 
-        !!IO.select([socket], nil, nil, 0.1)
+        !!socket.wait_readable(0.1)
       end
 
       def exec(sql)

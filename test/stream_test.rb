@@ -138,7 +138,7 @@ class StreamTest < Minitest::Test
     stream = OneShotStream.new(connection: connection, configuration: config)
 
     error = assert_raises(Pgoutput::Client::ProtocolError) do
-      stream.start { |_payload, _metadata| }
+      stream.start { nil }
     end
 
     assert_equal "unknown CopyData replication message: 63", error.message

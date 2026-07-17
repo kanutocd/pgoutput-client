@@ -70,6 +70,7 @@ module Pgoutput
       #   {Configuration#initialize}
       # @return [void]
       # @raise [ConfigurationError] if the supplied configuration is invalid
+      # rubocop:disable Style/ArgumentsForwarding -- YARD needs a named parameter
       def initialize(**options)
         @configuration = Configuration.new(
           **options # : untyped
@@ -84,6 +85,7 @@ module Pgoutput
         @last_error = nil
         @reconnect_attempts = 0
       end
+      # rubocop:enable Style/ArgumentsForwarding
 
       # Start streaming raw pgoutput payloads.
       #
@@ -144,9 +146,9 @@ module Pgoutput
       #
       # @yield [payload, metadata] called once for each XLogData payload
       # @return [void]
-      def restart(&block)
+      def restart(&)
         stop
-        start(&block)
+        start(&)
       end
 
       # Whether the runner is currently inside its streaming loop.
@@ -233,12 +235,12 @@ module Pgoutput
         error.message.match?(/replication slot .* already exists/i)
       end
 
-      def run_stream_cycle(configuration, &block)
+      def run_stream_cycle(configuration, &)
         connection = Connection.open(configuration)
         setup_connection(connection)
         @connected_once = true
         @stream = Stream.new(connection:, configuration:, acked_lsn: @acked_lsn)
-        @stream.start(&block)
+        @stream.start(&)
         :done
       rescue ConnectionError => e
         @last_error = e

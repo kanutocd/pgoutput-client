@@ -38,7 +38,7 @@ class FeedbackTest < Minitest::Test
     feedback = Pgoutput::Client::Feedback.new(1, 2, 3, 4, false)
 
     assert_equal "r".b + [1, 2, 3, 4].pack("Q>Q>Q>Q>") + "\0".b, feedback.to_copy_data
-    assert feedback.to_copy_data.frozen?
+    assert_predicate feedback.to_copy_data, :frozen?
   end
 
   def test_to_copy_data_with_reply_request

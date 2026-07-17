@@ -16,8 +16,8 @@ class XLogDataTest < Minitest::Test
     assert_equal "abc", xlog.payload
     assert_equal "0/10", xlog.wal_start_lsn
     assert_equal "0/20", xlog.wal_end_lsn
-    assert xlog.frozen?
-    assert xlog.payload.frozen?
+    assert_predicate xlog, :frozen?
+    assert_predicate xlog.payload, :frozen?
   end
 
   def test_parse_xlog_data_without_payload_body

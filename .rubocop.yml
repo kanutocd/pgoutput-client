@@ -3,6 +3,7 @@ plugins:
   - rubocop-rake
 
 AllCops:
+  NewCops: enable
   TargetRubyVersion: 3.4
 
 Style/StringLiterals:
@@ -38,3 +39,6 @@ Metrics/PerceivedComplexity:
 
 Metrics/ModuleLength:
   Max: 110
+
+Minitest/MultipleAssertions:
+  Max: 12

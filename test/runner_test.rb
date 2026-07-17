@@ -151,10 +151,10 @@ class RunnerTest < Minitest::Test
     }
   end
 
-  def with_fake_stream(&block)
+  def with_fake_stream(&)
     Pgoutput::Client::Stream.stub(:new, lambda { |connection:, configuration:, **|
       FakeStream.new(connection:, configuration:)
-    }, &block)
+    }, &)
   end
 
   def test_initialize_builds_configuration
@@ -172,6 +172,7 @@ class RunnerTest < Minitest::Test
     refute_predicate runner, :connected?
 
     state = runner.monitor
+
     assert_predicate state, :stopped?
     assert_equal "0/10", state.last_received_lsn
     assert_equal "0/10", state.last_feedback_lsn
@@ -201,6 +202,7 @@ class RunnerTest < Minitest::Test
     end
 
     state = snapshots.fetch(0)
+
     assert state.running
     assert state.connected
     assert_equal "0/20", state.last_received_lsn
@@ -235,15 +237,15 @@ class RunnerTest < Minitest::Test
         Pgoutput::Client::Stream.stub(:new, lambda { |connection:, configuration:, **kwargs|
           AlwaysFailingStream.new(connection:, configuration:, **kwargs)
         }) do
-          runner.start { |_payload, _metadata| }
+          runner.start { nil }
         end
       end
     end
 
     assert_equal "stream still down", error.message
     assert_equal 30, runner.sleep_calls.length
-    assert_equal 0.5, runner.sleep_calls.first
-    assert_equal 15.0, runner.sleep_calls.last
+    assert_in_delta(0.5, runner.sleep_calls.first)
+    assert_in_delta(15.0, runner.sleep_calls.last)
     assert_equal 31, fake_connection.calls.count(:start_replication)
     assert_equal "stream still down", runner.monitor.last_error
   end
@@ -272,7 +274,7 @@ class RunnerTest < Minitest::Test
 
     error = assert_raises(Pgoutput::Client::ConnectionError) do
       Pgoutput::Client::Connection.stub(:open, proc { raise Pgoutput::Client::ConnectionError, "cannot connect" }) do
-        runner.start { |_payload, _metadata| }
+        runner.start { nil }
       end
     end
 
@@ -351,7 +353,7 @@ class RunnerTest < Minitest::Test
 
     Pgoutput::Client::Connection.stub(:open, fake_connection) do
       with_fake_stream do
-        Pgoutput::Client::Runner.new(**options(auto_create_slot: true)).start { |_payload, _metadata| }
+        Pgoutput::Client::Runner.new(**options(auto_create_slot: true)).start { nil }
       end
     end
 
@@ -382,7 +384,7 @@ class RunnerTest < Minitest::Test
     raised = assert_raises(Pgoutput::Client::ConnectionError) do
       Pgoutput::Client::Connection.stub(:open, fake_connection) do
         with_fake_stream do
-          Pgoutput::Client::Runner.new(**options(auto_create_slot: true)).start { |_payload, _metadata| }
+          Pgoutput::Client::Runner.new(**options(auto_create_slot: true)).start { nil }
         end
       end
     end

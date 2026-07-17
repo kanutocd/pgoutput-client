@@ -14,7 +14,7 @@ class KeepaliveTest < Minitest::Test
     assert_equal 0x30, keepalive.server_clock
     refute keepalive.reply_requested
     assert_equal "0/20", keepalive.wal_end_lsn
-    assert keepalive.frozen?
+    assert_predicate keepalive, :frozen?
   end
 
   def test_parse_keepalive_with_reply_request

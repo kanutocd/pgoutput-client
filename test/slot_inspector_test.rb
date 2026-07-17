@@ -76,7 +76,7 @@ class SlotInspectorTest < Minitest::Test
     assert_equal "reserved", status.wal_status
     assert_equal 4096, status.safe_wal_size
     assert status.active
-    assert connection.closed?
+    assert_predicate connection, :closed?
     assert_equal ["slot1"], connection.queries.fetch(0).fetch(1)
     assert_match(/to_jsonb\(slot\)/, connection.queries.fetch(0).fetch(0))
   end
@@ -102,7 +102,7 @@ class SlotInspectorTest < Minitest::Test
     connection = FakeConnection.new
 
     assert_nil inspector(connection).fetch("missing")
-    assert connection.closed?
+    assert_predicate connection, :closed?
   end
 
   def test_fetch_wraps_pg_errors_and_closes_connection
@@ -114,7 +114,7 @@ class SlotInspectorTest < Minitest::Test
     end
 
     assert_equal "catalog unavailable", error.message
-    assert connection.closed?
+    assert_predicate connection, :closed?
   end
 
   def test_fetch_does_not_close_already_finished_connection
@@ -123,6 +123,6 @@ class SlotInspectorTest < Minitest::Test
 
     inspector(connection).fetch("missing")
 
-    refute connection.closed?
+    refute_predicate connection, :closed?
   end
 end

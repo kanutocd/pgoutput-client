@@ -71,7 +71,7 @@ module Pgoutput
       # @raise [ProtocolError] if an unknown or malformed replication message is
       #   received
       # @raise [ConnectionError] if standby feedback cannot be sent
-      def start(&block)
+      def start(&)
         raise ArgumentError, "block required" unless block_given?
 
         @running = true
@@ -83,7 +83,7 @@ module Pgoutput
             next
           end
 
-          process_copy_data(copy_data, &block)
+          process_copy_data(copy_data, &)
           send_periodic_feedback
         end
       ensure

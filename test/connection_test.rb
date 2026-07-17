@@ -136,7 +136,7 @@ class ConnectionTest < Minitest::Test
   def test_close_closes_unfinished_connection
     @connection.close
 
-    assert @pg_connection.closed?
+    assert_predicate @pg_connection, :closed?
   end
 
   def test_close_does_not_close_finished_connection
@@ -144,7 +144,7 @@ class ConnectionTest < Minitest::Test
 
     @connection.close
 
-    refute @pg_connection.closed?
+    refute_predicate @pg_connection, :closed?
   end
 
   def test_exec_wraps_pg_error
