@@ -58,6 +58,7 @@ Decoded row events
 - Supports `CREATE_REPLICATION_SLOT`
 - Supports `DROP_REPLICATION_SLOT`
 - Supports `START_REPLICATION SLOT ... LOGICAL ...`
+- Inspects version-dependent `pg_replication_slots` state
 - Parses XLogData envelopes
 - Parses primary keepalive messages
 - Builds standby feedback messages
@@ -175,6 +176,7 @@ It owns:
 - Keepalive handling
 - Standby status feedback
 - LSN conversion
+- Replication-slot catalog inspection
 
 ---
 
@@ -261,6 +263,24 @@ end
 Optional fields are `nil` on versions that do not expose them. The client
 reports catalog state only; deciding whether a durable checkpoint is safe to
 resume remains the downstream runtime's responsibility.
+
+### Pgoutput::Client::SlotInspector
+
+Queries `pg_replication_slots` through a short-lived ordinary PostgreSQL
+connection. `#fetch(slot_name)` returns `nil` when the slot is missing and a
+`SlotStatus` snapshot otherwise. `Runner#slot_status` is the convenient entry
+point for inspecting the runner's configured slot.
+
+### Pgoutput::Client::SlotStatus
+
+Immutable replication-slot catalog snapshot. It exposes identity, activity,
+WAL position, retention, and invalidation fields including:
+
+- `slot_name`, `plugin`, `slot_type`, and `database`
+- `active`, `active_pid`, and `inactive_since`
+- `restart_lsn` and `confirmed_flush_lsn`
+- `wal_status`, `safe_wal_size`, and `catalog_xmin`
+- `conflicting` and `invalidation_reason`
 
 ### Pgoutput::Client::Configuration
 
@@ -424,6 +444,11 @@ runner = Pgoutput::Client::Runner.new(
   temporary_slot: false
 )
 ```
+
+Existence alone does not prove that an existing or newly created slot can serve
+a downstream durable checkpoint. Use `Runner#slot_status` to obtain catalog
+state and apply continuity or recovery policy in the downstream runtime before
+streaming.
 
 Publication creation remains outside this gem. Create publications through
 application migrations, database bootstrap SQL, or infrastructure tooling.
