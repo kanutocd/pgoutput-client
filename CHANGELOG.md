@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0 - 2026-07-17
+
 ### Added
 
 - Added `Runner#slot_status` and `SlotInspector` for version-tolerant
