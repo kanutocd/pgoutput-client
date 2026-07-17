@@ -209,6 +209,23 @@ class RunnerTest < Minitest::Test
     assert_equal "0/40", runner.monitor.last_feedback_lsn
   end
 
+  def test_slot_status_inspects_configured_slot
+    runner = Pgoutput::Client::Runner.new(**options)
+    status = Pgoutput::Client::SlotStatus.from_catalog(
+      "slot_name" => "slot1",
+      "slot_type" => "logical",
+      "active" => false
+    )
+    inspector = Minitest::Mock.new
+    inspector.expect(:fetch, status, ["slot1"])
+
+    Pgoutput::Client::SlotInspector.stub(:new, inspector) do
+      assert_same status, runner.slot_status
+    end
+
+    inspector.verify
+  end
+
   def test_start_raises_after_reconnect_attempts_are_exhausted
     fake_connection = FakeConnection.new
     runner = RetryingRunner.new(**options(start_lsn: "0/10"))

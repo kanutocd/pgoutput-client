@@ -79,6 +79,8 @@ module Pgoutput
 
       def monitor: () -> Pgoutput::Client::RunnerState
 
+      def slot_status: () -> (Pgoutput::Client::SlotStatus | nil)
+
       private
 
       def setup_connection: (untyped connection) -> untyped

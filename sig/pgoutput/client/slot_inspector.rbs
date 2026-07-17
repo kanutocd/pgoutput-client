@@ -1,0 +1,18 @@
+module Pgoutput
+  module Client
+    class SlotInspector
+      QUERY: String
+
+      attr_reader database_url: String
+
+      def initialize: (database_url: String, ?connection_factory: untyped) -> void
+      def fetch: (String slot_name) -> (SlotStatus | nil)
+
+      private
+
+      def open_connection: () -> untyped
+      def parse_catalog: (untyped value) -> Hash[(String | Symbol), untyped]
+      def pg_error_class: () -> singleton(::PG::Error)
+    end
+  end
+end

@@ -201,6 +201,17 @@ module Pgoutput
         )
       end
 
+      # Inspect the configured replication slot through PostgreSQL's catalog.
+      #
+      # This reports transport state without applying downstream checkpoint or
+      # recovery policy.
+      #
+      # @return [SlotStatus, nil] current slot state, or `nil` when missing
+      # @raise [ConnectionError] when PostgreSQL cannot be queried
+      def slot_status
+        SlotInspector.new(database_url: configuration.database_url).fetch(configuration.slot_name)
+      end
+
       private
 
       def setup_connection(connection)

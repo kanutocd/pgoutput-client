@@ -25,6 +25,20 @@ class PostgresLogicalReplicationTest < Minitest::Test
 
       replication_connection = Pgoutput::Client::Connection.open(configuration)
       replication_connection.create_replication_slot
+
+      slot_status = Pgoutput::Client::Runner.new(
+        database_url: configuration.database_url,
+        slot_name: configuration.slot_name,
+        publication_names: configuration.publication_names
+      ).slot_status
+
+      assert_instance_of Pgoutput::Client::SlotStatus, slot_status
+      assert_equal schema.fetch(:slot_name), slot_status.slot_name
+      assert_equal "pgoutput", slot_status.plugin
+      assert_equal "logical", slot_status.slot_type
+      refute slot_status.active
+      refute_nil slot_status.restart_lsn
+
       replication_connection.start_replication
 
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)

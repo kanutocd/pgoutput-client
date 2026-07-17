@@ -241,6 +241,27 @@ client = Pgoutput::Client::Runner.new(...)
 client.start { |payload, metadata| ... }
 ```
 
+Inspect the configured replication slot before applying a downstream recovery
+policy:
+
+```ruby
+status = client.slot_status
+
+if status.nil?
+  warn "replication slot is missing"
+else
+  puts status.restart_lsn
+  puts status.confirmed_flush_lsn
+  puts status.wal_status
+  puts status.invalidation_reason
+end
+```
+
+`SlotStatus` reflects the fields available on the connected PostgreSQL version.
+Optional fields are `nil` on versions that do not expose them. The client
+reports catalog state only; deciding whether a durable checkpoint is safe to
+resume remains the downstream runtime's responsibility.
+
 ### Pgoutput::Client::Configuration
 
 Immutable configuration object.

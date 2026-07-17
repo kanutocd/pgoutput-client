@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- Added `Runner#slot_status` and `SlotInspector` for version-tolerant
+  `pg_replication_slots` inspection.
+- Added immutable `SlotStatus` snapshots exposing transport and slot-health
+  fields without imposing downstream recovery policy.
+
 ## 0.2.4 - 2026-06-17
 
 ### Added
